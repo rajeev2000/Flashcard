@@ -2,11 +2,13 @@ const express = require('express');
 const sql = require('mssql');
 const bodyParser = require('body-parser');
 
+
 const app = express();
 const port = 2601;
 
 app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.static('public/'));
+
 
 // MSSQL configuration
 const config = {
@@ -28,20 +30,16 @@ const config = {
 app.post('/add', async (req, res) => {
     const { Question, Answer } = req.body;
     try {
-        // Connect to the database
         await sql.connect(config);
         console.log("Connected to MSSQL!");
 
-        // Prepare the SQL request
         const request = new sql.Request();
         request.input('Question', sql.VarChar, Question);
         request.input('Answer', sql.VarChar, Answer);
 
-        // Execute the stored procedure
         await request.execute('AddFlashcard');
         console.log("1 record inserted");
 
-        // Send a success response
         res.json({ message: 'Added flashcard kudos' });
     } catch (err) {
         console.error('Error:', err);
@@ -56,7 +54,6 @@ app.get('/get', async (req, res) => {
         await sql.connect(config);
         const request = new sql.Request();
 
-        // Execute a stored procedure or SQL query
         const result = await request.query('SELECT Question, Answer FROM Flashcard;')
 
         res.json(result.recordset);
@@ -67,6 +64,7 @@ app.get('/get', async (req, res) => {
         sql.close();
     }
 });
+
 
 // Start the server
 app.listen(port, () => {
