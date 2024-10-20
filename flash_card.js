@@ -1,14 +1,15 @@
 const express = require('express');
 const sql = require('mssql');
 const bodyParser = require('body-parser');
-
+const path = require('path');
 
 const app = express();
 const port = 2601;
 
 app.use(bodyParser.json());
-app.use(express.static('public/'));
 
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // MSSQL configuration
 const config = {
@@ -27,6 +28,7 @@ const config = {
     }
 };
 
+// Add flashcard route
 app.post('/add', async (req, res) => {
     const { Question, Answer } = req.body;
     try {
@@ -49,17 +51,41 @@ app.post('/add', async (req, res) => {
     }
 });
 
+// Retrieve flashcards route
 app.get('/get', async (req, res) => {
     try {
         await sql.connect(config);
         const request = new sql.Request();
 
-        const result = await request.query('SELECT Question, Answer FROM Flashcard;')
-
+        const result = await request.query('SELECT Question, Answer FROM Flashcard;');
         res.json(result.recordset);
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({ message: 'Error while retrieving the data' });
+    } finally {
+        sql.close();
+    }
+});
+
+// Hardcoded users for login validation
+const users = [{ loginid: 'Admin', password: '2601' }];
+
+// Login validation route
+app.post('/validationlogin', async (req, res) => {
+    const { loginid, password } = req.body;
+    try {
+        await sql.connect(config);
+        console.log("MSSQL connected successfully");
+
+        const user = users.find(u => u.loginid === loginid && u.password === password);
+        if (user) {
+            res.json({ success: true });  // Send success response
+        } else {
+            res.json({ success: false, message: 'Invalid credentials' });  // Send failure response
+        }
+    } catch (err) {
+        console.log("Error:", err);
+        res.status(500).json({ success: false, message: 'Server error' });
     } finally {
         sql.close();
     }
