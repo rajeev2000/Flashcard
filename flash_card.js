@@ -51,6 +51,29 @@ app.post('/add', async (req, res) => {
     }
 });
 
+app.post('/add', async (req, res) => {
+    const { Question, Answer } = req.body;
+    try {
+        await sql.connect(config);
+        console.log("Connected to MSSQL!");
+
+        const request = new sql.Request();
+        request.input('Question', sql.VarChar, Question);
+        request.input('Answer', sql.VarChar, Answer);
+
+        await request.execute('AddFlashcard');
+        console.log("1 record inserted");
+
+        res.json({ message: 'Added flashcard kudos' });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ message: 'Failed to connect' });
+    } finally {
+        sql.close();
+    }
+});
+
+
 // Retrieve flashcards route
 app.get('/get', async (req, res) => {
     try {
@@ -66,7 +89,21 @@ app.get('/get', async (req, res) => {
         sql.close();
     }
 });
+// Retrieve maths flashcard
+app.get('/getmaths', async (req, res) => {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
 
+        const result = await request.query('SELECT Question, Answer FROM [dbo].[maths];');
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ message: 'Error while retrieving the data' });
+    } finally {
+        sql.close();
+    }
+});
 // Hardcoded users for login validation
 const users = [{ loginid: 'Admin', password: '2601' }];
 

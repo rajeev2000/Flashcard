@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Cards</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, rgba(0, 150, 255, 0.6), rgba(255, 255, 255, 0.6));
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+        h1 {
+            color: #005f99;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .flashcard-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .flashcard {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            height: 200px;
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: absolute;
+            transition: transform 0.6s, box-shadow 0.6s;
+        }
+        .flashcard.hidden {
+            display: none;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flashcard.is-flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .flashcard-front {
+            background-color: rgba(0, 150, 255, 0.8); /* Question background */
+            color: white;
+        }
+        .flashcard-back {
+            background-color: rgba(255, 255, 255, 0.9); /* Answer background */
+            color: #333;
+            transform: rotateY(180deg);
+        }
+        .flashcard.swiped-left, .flashcard.swiped-right {
+            transform: translateX(1000px) rotate(45deg);
+            box-shadow: none;
+        }
+        .flashcard.swiped-right {
+            transform: translateX(-1000px) rotate(-45deg);
+            box-shadow: none;
+        }
+            .align-left {
+                display: block; /* Ensures the link is treated like a block element */
+                text-align: left; /* Aligns the text to the left */
+            }
+        
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+</head>
+<a href="/Formulasupload.html" style="display: block; text-align: left;">Upload</a>
+<body>
+    
+    <h1>Flash Cards</h1>
+    <div class="flashcard-container" id="flashcard-container">
+        <!-- dynamically inserted flashcards will appear here -->
+    </div>
+    <script>
+        let currentCardIndex = 0;
+        let flashcards = [];
+
+        fetch('/getmaths')
+        .then(response => response.json())
+        .then(data => {
+            flashcards = shuffleArray(data);
+            displayFlashcard(currentCardIndex);
+        })
+        .catch(err => {
+            console.error("Error:", err);
+        });
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function displayFlashcard(index) {
+            const flashcardContainer = document.getElementById('flashcard-container');
+            flashcardContainer.innerHTML = ''; // Clear previous flashcard
+
+            if (index >= flashcards.length) {
+                flashcardContainer.innerHTML = '<p>No more flashcards.</p>';
+                return;
+            }
+
+            const flashcardData = flashcards[index];
+            const flashcard = document.createElement('div');
+            flashcard.classList.add('flashcard');
+            const flashcardInner = document.createElement('div');
+            flashcardInner.classList.add('flashcard-inner');
+
+            const flashcardFront = document.createElement('div');
+            flashcardFront.classList.add('flashcard-front');
+            flashcardFront.textContent = flashcardData.Question;
+
+            const flashcardBack = document.createElement('div');
+            flashcardBack.classList.add('flashcard-back');
+            flashcardBack.textContent = flashcardData.Answer;
+
+            flashcardInner.appendChild(flashcardFront);
+            flashcardInner.appendChild(flashcardBack);
+            flashcard.appendChild(flashcardInner);
+            flashcardContainer.appendChild(flashcard);
+
+            const hammer = new Hammer(flashcard);
+            hammer.on('swipeleft swiperight', function(ev) {
+                flashcard.classList.add('hidden');
+                flashcard.classList.add(ev.type === 'swipeleft' ? 'swiped-left' : 'swiped-right');
+                setTimeout(() => {
+                    currentCardIndex++;
+                    displayFlashcard(currentCardIndex);
+                }, 300);
+            });
+
+            flashcard.addEventListener('click', () => {
+                flashcard.classList.toggle('is-flipped');
+            });
+        }
+    </script>
+</body>
+</html>
