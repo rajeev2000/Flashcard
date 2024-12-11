@@ -57,7 +57,7 @@ app.get('/get', async (req, res) => {
         await sql.connect(config);
         const request = new sql.Request();
 
-        const result = await request.query('SELECT Question, Answer FROM Flashcard;');
+        const result = await request.query('SELECT Question, Answer FROM [dbo].[english];');
         res.json(result.recordset);
     } catch (err) {
         console.error('Error:', err);
