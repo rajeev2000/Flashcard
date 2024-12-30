@@ -51,7 +51,7 @@ app.post('/add', async (req, res) => {
     }
 });
 
-app.post('/add', async (req, res) => {
+app.post('/addformula', async (req, res) => {
     const { Question, Answer } = req.body;
     try {
         await sql.connect(config);
@@ -61,7 +61,7 @@ app.post('/add', async (req, res) => {
         request.input('Question', sql.VarChar, Question);
         request.input('Answer', sql.VarChar, Answer);
 
-        await request.execute('AddFlashcard');
+        await request.query("INSERT INTO [dbo].[maths] (Question, Answer) VALUES (@Question, @Answer)");
         console.log("1 record inserted");
 
         res.json({ message: 'Added flashcard kudos' });
@@ -80,7 +80,7 @@ app.get('/get', async (req, res) => {
         await sql.connect(config);
         const request = new sql.Request();
 
-        const result = await request.query('SELECT Question, Answer FROM [dbo].[english];');
+        const result = await request.query('SELECT Question, Answer FROM [dbo].[uncertain];');
         res.json(result.recordset);
     } catch (err) {
         console.error('Error:', err);
