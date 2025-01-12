@@ -13,10 +13,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // MSSQL configuration
 const config = {
-    user: 'app',
-    password: '1234',
+    user: 'sa',
+    password: 'Rajeev@2601',
     database: 'user',
-    server: 'Rajeevsmsi',
+    server: 'instance-20250112-122738',
     pool: {
         max: 10,
         min: 0,
