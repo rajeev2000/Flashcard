@@ -16,7 +16,7 @@ const config = {
     user: 'sa',
     password: 'Rajeev@2601',
     database: 'user',
-    server: 'instance-20250112-122738',
+    server: 'flash',
     pool: {
         max: 10,
         min: 0,
@@ -80,7 +80,7 @@ app.get('/get', async (req, res) => {
         await sql.connect(config);
         const request = new sql.Request();
 
-        const result = await request.query('SELECT Question, Answer FROM [dbo].[uncertain];');
+        const result = await request.query('SELECT Question, Answer FROM [dbo].[english];');
         res.json(result.recordset);
     } catch (err) {
         console.error('Error:', err);
